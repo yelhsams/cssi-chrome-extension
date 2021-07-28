@@ -5,6 +5,7 @@
 console.log('sketch blah');
 
 var s = function(sketch) {
+  let col = "black";
   sketch.setup = function() {
     document.body.style['userSelect'] = 'none';
     let h = document.body.clientHeight;
@@ -15,11 +16,24 @@ var s = function(sketch) {
   };
 
   sketch.draw = function() {
-    sketch.stroke(0);
+    sketch.stroke(col);
     sketch.strokeWeight(4);
     if (sketch.mouseIsPressed) {
       sketch.line(sketch.mouseX, sketch.mouseY, sketch.pmouseX, sketch.pmouseY);
     }
+
+  sketch.keyPressed = function(){
+    if (sketch.key == 'e')
+      sketch.clear();
+    else if (sketch.key == 'r')
+      col = "Red";
+    else if (sketch.key == 'b')
+      col = "Blue";
+    else if (sketch.key == 'g')
+      col = "Green";
+    else if (sketch.key == 'z')
+      col = "Black";
+  }
   };
 };
 
