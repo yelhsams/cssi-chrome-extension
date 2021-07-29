@@ -9,7 +9,10 @@
     "matches": [
       "<all_urls>"
     ],
-    "js": ["p5.js", "p5.dom.min.js", "sketch.js"]
+    "js": ["p5.js", "p5.dom.min.js", "p5.collide2d.js", "sketch.js"]
     
-  }]
+  }], 
+  "browser_action": {
+    "default_icon": "images/flying-bird.png"
+  }
 }
