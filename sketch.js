@@ -6,37 +6,63 @@
 var s = function(sketch) {
 
   let col = "black";
-  let menuObj, gameMode, nightButton, birdImage, dayImage, dayButton, nightImage;
+  let menuObj, gameMode, nightButton, dayImage, dayButton, nightImage;
+  let poopImage;
+  let birdImage, flippedBirdImage, bird, birdOnScreen;
+
   sketch.preload = function() {
-    let filename = "images/flying-bird.png"
-    let url = chrome.extension.getURL(filename);
-    birdImage = sketch.loadImage(url)
+    //load bird image facing left
+    let filenameBird = "images/flying-bird.png"
+    let urlBird = chrome.extension.getURL(filenameBird);
+    birdImage = sketch.loadImage(urlBird)
+
+    //load bird image facing right
+    let filenameFlippedBird = "images/flying-bird-flipped.png"
+    let urlFlippedBird = chrome.extension.getURL(filenameFlippedBird)
+    flippedBirdImage = sketch.loadImage(urlFlippedBird)
+
+    //load poop image
+    let filenamePoop = "images/poop.png"
+    let urlPoop = chrome.extension.getURL(filenamePoop)
+    poopImage = sketch.loadImage(urlPoop)
+
   }
   sketch.setup = function() {
+
+    //do not let user highlight text
     document.body.style['userSelect'] = 'none';
+
+    //height of entire page
     let h = document.body.clientHeight;
+    //create canvas only to window size
     let c = sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
+
+    //absolute position
     c.position(0, 0);
+    //place images on top of all other HTML elements
     c.style('pointer-events', 'none');
     c.style('z-index', '999')
-    sketch.clear();
-    gameMode = "day";
 
-    menuObj = new Menu();
-    
-    nightButton = new Button(1, "night", birdImage)
-    
+    //reset canvas to clear
+    sketch.clear();
+
+    //don't show bird
+    birdOnScreen = false;
+
+    //gameMode = "day";
+    //menuObj = new Menu();
+    //nightButton = new Button(1, "night", birdImage)
   };
 
   sketch.draw = function() {
-    sketch.stroke(col);
-    sketch.strokeWeight(4);
-    if (sketch.mouseIsPressed) {
-      sketch.line(sketch.mouseX, sketch.mouseY, sketch.pmouseX, sketch.pmouseY);
+    //menuObj.display()
+    //nightButton.display()
+    
+    sketch.lineArt()
+    if(birdOnScreen){
+      bird.moveBird()
+      bird.display()
     }
-    menuObj.display()
-    sketch.image(birdImage, 0, 0, 100, 100)
-    nightButton.display()
   };
   sketch.keyPressed = function(){
     if (sketch.key == 'e')
@@ -49,6 +75,54 @@ var s = function(sketch) {
       col = "Green";
     else if (sketch.key == 'z')
       col = "Black";
+    else if (sketch.key == 'p')
+      bird = new Bird();
+  };
+  class Bird {
+    constructor(){
+      this.xspeed = sketch.round(sketch.random(1, 3))
+      let randomNumber = sketch.round(sketch.random(0, 1))
+      console.log("random number: " + randomNumber)
+      if(randomNumber == 1){
+        this.x = sketch.windowWidth - 50
+        this.xspeed *=-1
+        console.log("xspeed " + this.xspeed)
+        console.log("x: " + this.x)
+        this.image = birdImage;
+      } else {
+        this.x = -50
+        console.log("xspeed: " + this.xspeed)
+        console.log("this.x: " + this.x)
+        this.image = flippedBirdImage;
+        
+      }
+      this.y = sketch.random(100, sketch.height - 100)
+      this.yspeed = sketch.random(2, 5)
+      if(this.y > 250){
+        this.yspeed *=-1
+      }
+      console.log("yspeed: " + this.yspeed)
+      console.log("this.y: " + this.y)
+      birdOnScreen = true;
+    }
+    moveBird(){
+      this.x +=this.xspeed
+      this.y +=this.yspeed 
+      console.log("yspeed: " + this.yspeed)
+      console.log("this.y: " + this.y)
+      console.log("xspeed: " + this.xspeed)
+      console.log("this.x: " + this.x)
+      let randomNumber = sketch.round(sketch.random(0, 50))
+      if(randomNumber == 1){
+        this.yspeed *= -1
+      }
+
+    }
+    display(){
+      sketch.clear();
+      sketch.image(this.image, this.x, this.y, 100, 75)
+      
+    }
   };
   class Menu {
     constructor(){
@@ -59,7 +133,7 @@ var s = function(sketch) {
       sketch.fill(60)
       sketch.stroke(60)
       sketch.rect(this.x, this.y, 200, 500)
-      console.log("menu is drawn")
+      //console.log("menu is drawn")
     }
   };
   class Button {
@@ -82,6 +156,19 @@ var s = function(sketch) {
       }
     }
   };
+
+
+
+
+
+  //sketch functions
+  sketch.lineArt = function(){
+    sketch.stroke(col);
+    sketch.strokeWeight(4);
+    if (sketch.mouseIsPressed) {
+      sketch.line(sketch.mouseX, sketch.mouseY, sketch.pmouseX, sketch.pmouseY);
+    }
+  }
 };
 
 var myp5 = new p5(s);
