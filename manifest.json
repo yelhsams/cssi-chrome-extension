@@ -3,7 +3,8 @@
   "name": "p5 sketch",
   "version": "0.1",
   "web_accessible_resources": [
-    "images/*.png"
+    "images/*.png",
+    "assets/*.ttf"
   ],
   "content_scripts": [{
     "matches": [

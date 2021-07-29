@@ -4,15 +4,16 @@
 
 
 var s = function(sketch) {
-  let bronze;
-  let silver;
-  let gold;
-  let col = "black";
+  let bronze, silver, gold;
+  let thirdMedal, secondMedal, firstMedal;
   let menuObj;
+
   let poopImage, poopList;
   let birdImage, flippedBirdImage, bird, birdOnScreen;
   let points;
-  let thirdMedal, secondMedal, firstMedal;
+  
+  
+  let col = "black";
   sketch.preload = function() {
     //load bird image facing left
     let filenameBird = "images/flying-bird.png"
@@ -34,7 +35,8 @@ var s = function(sketch) {
     secondMedal = sketch.loadImage(chrome.extension.getURL("images/silver-medal.png"))
     thirdMedal = sketch.loadImage(chrome.extension.getURL("images/bronze-medal.png"))
 
-
+    //font is Roboto Bold
+    fontRegular = sketch.loadFont(chrome.extension.getURL('assets/Roboto-Bold.ttf'));
   }
   sketch.setup = function() {
 
@@ -58,41 +60,54 @@ var s = function(sketch) {
     //don't show bird
     birdOnScreen = false;
 
-    //gameMode = "day";
+    //create menu page
     menuObj = new Menu();
-    //nightButton = new Button(1, "night", birdImage)
 
+    //collectible items list
     poopList = [];
     medalList = [];
-    points = 20
+
+    //starting number of points
+    points = 0;
     
-    bronze = new Medal(menuObj.x, menuObj.y + 125, thirdMedal, "Novice Pooper",  "You've collected 5 Poops!")
-    silver = new Medal(menuObj.x, menuObj.y + 225, secondMedal, "Intermediate Pooper", "You've collected 15 Poops!")
-    gold = new Medal(menuObj.x, menuObj.y + 325, firstMedal,  "Expert Pooper", "You've collected 20 Poops!")
+    //set medals in relative position to Menu
+    bronze = new Medal(menuObj.x, menuObj.y + 135, thirdMedal, "Novice Pooper",  "You've collected 5 Poops!")
+    silver = new Medal(menuObj.x, menuObj.y + 235, secondMedal, "Intermediate Pooper", "You've collected 15 Poops!")
+    gold = new Medal(menuObj.x, menuObj.y + 335, firstMedal,  "Expert Pooper", "You've collected 20 Poops!")
+    
+    //font for all text
+    sketch.textFont(fontRegular);
   };
 
   sketch.draw = function() {
     
-    //nightButton.display()
-    
+    //sketch feature
     sketch.lineArt()
+    //if bird is "activated", it will appear and fly across the screen!
     if(birdOnScreen){
       bird.moveBird()
       bird.display()
-      console.log(poopList)
+
+      //every 2 seconds or every 120th frame, a poop will be dropped
       if(sketch.frameCount % 120 == 0){
         bird.addPoop()
       }
+
+      //because poops may be removed, it is important that the display is a separate function than .addpoop
       for(let poop of poopList){
         poop.display()
-        //error here!!
-        //poop.checkCollect()
+        //check if user has collected poop
+        poop.checkCollect()
       }
     }
+
+    //display menu
     menuObj.display()
+    //display medals according to poops collected
     sketch.medalRewarder()
 
   };
+  //mostly pertaining to sketch project, "p" allows bird to appear
   sketch.keyPressed = function(){
     if (sketch.key == 'e')
       sketch.clear();
@@ -107,6 +122,7 @@ var s = function(sketch) {
     else if (sketch.key == 'p')
       bird = new Bird();
   };
+  
   class Poop {
     constructor(xPos, yPos, image){
       this.x = xPos
@@ -117,8 +133,8 @@ var s = function(sketch) {
       sketch.image(this.image, this.x, this.y, 30, 30)
     }
     checkCollect(){
-      //not working-- ask 
-      let collide = collideCircleCircle(this.x, this.y, 30, sketch.mouseX, sketch.mouseY, 3)
+      //if the poop is hovered over, it will add to points and remove the poop from the list and keep the rest in place
+      let collide = myp5.collideCircleCircle(this.x, this.y, 30, sketch.mouseX, sketch.mouseY, 10)
       if(collide){
         points+=1
         let index = poopList.indexOf(this)
@@ -129,11 +145,13 @@ var s = function(sketch) {
   class Bird {
     constructor(){
       
-      let randomNumber = sketch.round(sketch.random(0, 1))
       
-      
+      //xspeed will be between 1 and 3
       this.xspeed = sketch.round(sketch.random(1, 3))
-      
+
+      //1/2 chance bird comes from left / right
+      let randomNumber = sketch.round(sketch.random(0, 1))
+
       if(randomNumber == 1){
         this.x = sketch.windowWidth - 50
         this.xspeed *=-1
@@ -143,9 +161,13 @@ var s = function(sketch) {
         this.image = flippedBirdImage;
       }
 
+      //starting y position
       this.y = sketch.random(100, sketch.height - 100)
+
+      //yspeed is between 2 and 5
       this.yspeed = sketch.random(2, 5)
 
+      //if it starts on the bottom half of window, fly upward!
       if(this.y > 250){
         this.yspeed *=-1
       }
@@ -159,34 +181,39 @@ var s = function(sketch) {
       console.log("this.y: " + this.y)*/
     }
     addPoop(){
+      //adds a new poop at its position into poop list
       let poop = new Poop(this.x, this.y, poopImage)
       poopList.push(poop)
-      console.log("poop dropped")
     }
     moveBird(){
+      //move bird
       this.x +=this.xspeed
       this.y +=this.yspeed 
      
-      // 1 in 50 chance to switch directions
+      // 1 in 50 chance to switch directions up / down
       let randomNumber = sketch.round(sketch.random(0, 50))
       if(randomNumber == 1){
         this.yspeed *= -1
       }
-
-      console.log("yspeed: " + this.yspeed)
-      console.log("this.y: " + this.y)
-      console.log("xspeed: " + this.xspeed)
-      console.log("this.x: " + this.x)
+      
+      //if it gets close to bottom or top of screen, it will switch vertical direction
+      if(this.y < 10 || this.y > sketch.windowHeight - 10){
+        this.yspeed *= -1
+      }
     }
     display(){
+      //motion
       sketch.clear();
       sketch.image(this.image, this.x, this.y, 100, 75)
     }
   };
+
+  //function to clear screen -- not in use
   sketch.clearScreen = function(){
     sketch.clear();
 
   }
+  //switch to display medals
   sketch.medalRewarder = function(){
     if(points >=5){
       bronze.display()
@@ -198,21 +225,27 @@ var s = function(sketch) {
       gold.display()
     }
   }
+
   class Menu {
     constructor(){
       this.x = sketch.windowWidth - 250;
       this.y = 50;
     }
     display(){
-      sketch.fill(60)
-      sketch.stroke(60)
+      sketch.fill("black")
+      
+      sketch.stroke(0)
       sketch.rect(this.x, this.y, 200, 500)
       sketch.fill("white")
       sketch.textAlign(sketch.CENTER)
-      sketch.text("Collect the bird's poop for points!", this.x + 100, this.y + 10)
-      sketch.text("Points:", this.x + 100, this.y + 30)
-      sketch.image(poopImage, this.x + 100, this.y + 50, 30, 30)
-      sketch.text(points, this.x + 140, this.y + 75)
+      sketch.textSize(12)
+      sketch.text("Press p for pooping bird!", this.x + 100, this.y + 20)
+      sketch.text("Collect poop by hovering over it!", this.x + 100, this.y + 40)
+      sketch.text("Points:", this.x + 100, this.y + 60)
+      sketch.text("Awards Collected:", this.x + 100, this.y + 120)
+      sketch.image(poopImage, this.x + 80, this.y + 70, 30, 30)
+      sketch.text(points, this.x + 120, this.y + 90)
+      sketch.text("Need a break from studying?\nMagical Pooping Bird can help!", this.x + 100, this.y + 450)
       //console.log("menu is drawn")
     }
   };
@@ -229,16 +262,10 @@ var s = function(sketch) {
       sketch.textSize(15)
       sketch.textAlign(sketch.CENTER)
       sketch.text(this.name, this.x + 100, this.y + 65)
-      sketch.image(this.image, this.x + 100, this.y, 40, 50)
+      sketch.image(this.image, this.x + 80, this.y, 40, 50)
       
       sketch.textSize(10)
       sketch.text(this.description, this.x + 100, this.y + 75)
-    }
-    checkCollide(){
-      let collide = sketch.collideCircleCircle(this.x, this.y, 10, 10, sketch.mouseX, sketch.mouseY, 3, 3)
-      if(collide){
-        gameMode = this.mode
-      }
     }
   };
 
