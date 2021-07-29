@@ -12,7 +12,7 @@ var s = function(sketch) {
   let birdImage, flippedBirdImage, bird, birdOnScreen;
   let points;
   
-  let trail, a;
+  let trail, a, b, c;
 
   let col = "black";
   sketch.preload = function() {
@@ -158,9 +158,13 @@ var s = function(sketch) {
         this.x = sketch.windowWidth - 50
         this.xspeed *=-1
         this.image = birdImage;
+        b = 80
+        c = 60
       } else {
         this.x = -50
         this.image = flippedBirdImage;
+        b = 20
+        c = 60
       }
 
       //starting y position
@@ -274,7 +278,8 @@ var s = function(sketch) {
 
   //pink trail for bird
   sketch.birdTrail = function() {
-    trail.push([bird.x + 80, bird.y + 60]);
+    
+    trail.push([bird.x + b, bird.y + c]);
     for(let i = 0; i < trail.length; i++) {
     sketch.noStroke();
     sketch.fill(57, 255, 20, a);
