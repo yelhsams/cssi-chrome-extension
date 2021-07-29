@@ -12,7 +12,8 @@ var s = function(sketch) {
   let birdImage, flippedBirdImage, bird, birdOnScreen;
   let points;
   
-  
+  let trail, a;
+
   let col = "black";
   sketch.preload = function() {
     //load bird image facing left
@@ -66,9 +67,10 @@ var s = function(sketch) {
     //collectible items list
     poopList = [];
     medalList = [];
-
+    trail = [];
     //starting number of points
     points = 0;
+    a = 0;
     
     //set medals in relative position to Menu
     bronze = new Medal(menuObj.x, menuObj.y + 135, thirdMedal, "Novice Pooper",  "You've collected 5 Poops!")
@@ -87,7 +89,7 @@ var s = function(sketch) {
     if(birdOnScreen){
       bird.moveBird()
       bird.display()
-
+      sketch.birdTrail()
       //every 2 seconds or every 120th frame, a poop will be dropped
       if(sketch.frameCount % 120 == 0){
         bird.addPoop()
@@ -270,8 +272,20 @@ var s = function(sketch) {
   };
 
 
-
-
+  //pink trail for bird
+  sketch.birdTrail = function() {
+    trail.push([bird.x + 80, bird.y + 60]);
+    for(let i = 0; i < trail.length; i++) {
+    sketch.noStroke();
+    sketch.fill(57, 255, 20, a);
+    sketch.ellipse(trail[i][0], trail[i][1], 10);
+      if(a > 255) {
+        trail.shift();
+        a = 0;
+      }
+      a += 8;
+    }
+  }
 
   //sketch functions
   sketch.lineArt = function(){
